@@ -1,0 +1,12 @@
+sistema_fardas/
+│
+├── app.py                # Arquivo principal Streamlit
+├── db.py                 # Conexão com MongoDB
+├── auth.py               # Autenticação e sessão
+├── utils.py              # Funções auxiliares (e-mail, WhatsApp, alertas)
+├── relatorios.py         # Função de geração de PDFs
+├── pages/                # Páginas (opcional, para Streamlit multipage)
+│   ├── alunos.py
+│   ├── estoque.py
+│   └── ...
+└── images/               # Imagens das peças
