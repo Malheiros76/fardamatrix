@@ -52,3 +52,36 @@ def alerta_estoque(movimentacao_col):
         if saldo < limite:
             mensagens.append(f"Produto {r['_id']} está abaixo do limite. Saldo atual: {saldo}")
     return mensagens
+# utils.py (adicionar no final)
+
+from datetime import datetime
+
+def registrar_entrega(aluno_nome, cgm, turma, entrega, movimentacao_aluno_col):
+    """Registra ou atualiza entregas de fardas no MongoDB"""
+    registros_salvos = 0
+    data_hoje = datetime.now().strftime("%Y-%m-%d")
+
+    for peca, dados in entrega.items():
+        qtd = dados["quantidade"]
+        tam = dados["tamanho"]
+        if qtd > 0:
+            filtro = {
+                "aluno": aluno_nome,
+                "cgm": cgm,
+                "turma": turma,
+                "peca": peca.replace(".png", ""),
+                "data": data_hoje
+            }
+
+            dados_novos = {
+                "$set": {
+                    "quantidade": qtd,
+                    "tamanho": tam
+                }
+            }
+
+            resultado = movimentacao_aluno_col.update_one(filtro, dados_novos, upsert=True)
+            if resultado.modified_count > 0 or resultado.upserted_id:
+                registros_salvos += 1
+
+    return registros_salvos
