@@ -42,3 +42,32 @@ def gerar_pdf_estoque(df, nome_arquivo=None):
 
     cpdf.save()
     return nome_arquivo
+
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+
+def gerar_pdf_entregas(df, nome_arquivo=\"historico_entregas.pdf\"):
+    doc = SimpleDocTemplate(nome_arquivo, pagesize=landscape(A4))
+    elementos = []
+
+    estilos = getSampleStyleSheet()
+    elementos.append(Paragraph(\"Histórico de Entregas de Fardas\", estilos['Title']))
+    elementos.append(Spacer(1, 12))
+
+    dados = [df.columns.to_list()] + df.values.tolist()
+    tabela = Table(dados, repeatRows=1)
+    tabela.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0,0), (-1,0), 12),
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+    ]))
+
+    elementos.append(tabela)
+    doc.build(elementos)
+    return nome_arquivo
+
