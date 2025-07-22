@@ -4,7 +4,7 @@ import pandas as pd
 from db import get_db
 from auth import autenticar, autenticar_sessao
 from utils import alerta_estoque, enviar_email, enviar_whatsapp, registrar_entrega
-from relatorios import gerar_pdf_estoque
+from relatorios import gerar_pdf_estoque, gerar_pdf_entregas
 
 st.set_page_config(page_title="Sistema de Fardas", layout="wide")
 
@@ -36,7 +36,7 @@ if not st.session_state.logado:
     st.stop()
 
 # ---------------------------- MENU PRINCIPAL ----------------------------
-opcoes = ["Cadastro de Peças", "Movimentação de Estoque", "Relatório de Estoque", "Alunos"]
+opcoes = ["Cadastro de Peças", "Movimentação de Estoque", "Relatório de Estoque", "Alunos", "Histórico de Entregas"]
 menu = st.sidebar.radio("Menu", opcoes)
 
 # ---------------------------- CADASTRO DE PEÇAS ----------------------------
@@ -139,12 +139,40 @@ elif menu == "Alunos":
             else:
                 st.info("Nenhuma alteração realizada.")
 
-opcoes = [
-    "Cadastro de Peças",
-    "Movimentação de Estoque",
-    "Relatório de Estoque",
-    "Alunos",
-    "Histórico de Entregas"
-]
-menu = st.sidebar.radio("Menu", opcoes)
+# ---------------------------- HISTÓRICO DE ENTREGAS ----------------------------
+elif menu == "Histórico de Entregas":
+    st.subheader("Histórico de Entregas de Fardas")
 
+    # Filtros
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        nome_filtro = st.text_input("Filtrar por nome do aluno")
+    with col2:
+        turma_filtro = st.text_input("Filtrar por turma")
+    with col3:
+        data_filtro = st.date_input("Filtrar por data", format="DD/MM/YYYY", value=None)
+
+    # Construir filtro MongoDB
+    filtro = {}
+    if nome_filtro:
+        filtro["aluno"] = {"$regex": nome_filtro, "$options": "i"}
+    if turma_filtro:
+        filtro["turma"] = {"$regex": turma_filtro, "$options": "i"}
+    if data_filtro:
+        filtro["data"] = data_filtro.strftime("%Y-%m-%d")
+
+    # Buscar registros
+    historico = list(movimentacao_aluno_col.find(filtro).sort("data", -1))
+
+    if historico:
+        df = pd.DataFrame(historico)
+        df = df[["data", "aluno", "cgm", "turma", "peca", "quantidade", "tamanho"]]
+        df.columns = ["Data", "Aluno", "CGM", "Turma", "Peça", "Quantidade", "Tamanho"]
+        st.dataframe(df, use_container_width=True)
+
+        if st.button("📥 Exportar como PDF"):
+            caminho_pdf = gerar_pdf_entregas(df)
+            with open(caminho_pdf, "rb") as f:
+                st.download_button("Baixar PDF", f, file_name="historico_entregas.pdf")
+    else:
+        st.info("Nenhuma entrega encontrada com os filtros aplicados.")
