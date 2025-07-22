@@ -1,5 +1,6 @@
 from auth import autenticar
 from db import get_db
+from utils import alerta_estoque, enviar_email, enviar_whatsapp
 
 # bancos de  dados
 db = get_db()
@@ -26,3 +27,5 @@ if not st.session_state.logado:
                 st.rerun()
             else:
                 st.error("Usuário ou senha inválidos.")
+
+
