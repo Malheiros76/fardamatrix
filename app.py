@@ -138,3 +138,13 @@ elif menu == "Alunos":
                 st.success(f"{registros_salvos} peça(s) registrada(s) com sucesso!")
             else:
                 st.info("Nenhuma alteração realizada.")
+
+opcoes = [
+    "Cadastro de Peças",
+    "Movimentação de Estoque",
+    "Relatório de Estoque",
+    "Alunos",
+    "Histórico de Entregas"
+]
+menu = st.sidebar.radio("Menu", opcoes)
+
